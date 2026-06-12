@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.db.models import Q
 
 #Local imports
 from .models import Task
@@ -60,6 +61,8 @@ class TasksListApiView(APIView):
 
             search = request.query_params.get("search")
             status_filter = request.query_params.get("status")
+            ordering = request.query_params.get("ordering")
+
 
             if is_admin(user):
                 task_qs = Task.objects.all().select_related("owner")
@@ -75,10 +78,19 @@ class TasksListApiView(APIView):
                 )
             
             if search:
-                task_qs = task_qs.filter(title__icontains=search) | task_qs.filter(description__icontains=search)
+                task_qs = task_qs.filter(Q(title__icontains=search) | Q(description__icontains=search))
 
             if status_filter:
                 task_qs = task_qs.filter(status=status_filter)
+            
+            if ordering:
+                if ordering == "lowdeadline":
+                    task_qs = task_qs.order_by("due_date")
+                elif ordering == "highdeadline":
+                    task_qs = task_qs.order_by("-due_date")
+
+
+
 
             paginator = self.pagination_class()
 
@@ -126,7 +138,7 @@ class TaskDetailApiView(APIView):
             return Response(success_response(message="Task Fetched Successfully", data= serializer.data),
                             status=status.HTTP_200_OK)
             
-        except:
+        except Exception as e:
              return Response(
                 error_response(message="Something went wrong while fetching Task.", errors=str(e)),
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -157,7 +169,7 @@ class TaskDetailApiView(APIView):
             validated = validator.validated_data
 
             if "title" in validated and validated["title"]:
-                validated["title"] = validated["title"].strip()
+                validated["title"] = validated["title"]
 
             for key, value in validated.items():
                 setattr(task_obj, key, value)
@@ -172,7 +184,7 @@ class TaskDetailApiView(APIView):
    
         except Exception as e:
             return Response(
-                error_response(message="Something went wrong while updating Task.", errors="An internal error occurred."),
+                error_response(message="Something went wrong while updating Task.", errors=str(e)),
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         

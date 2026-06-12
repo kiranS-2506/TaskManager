@@ -4,6 +4,7 @@ from .models import Task
 class TaskSerializer(serializers.ModelSerializer):
 
     owner = serializers.CharField(source="owner.username", read_only=True)
+    due_date = serializers.DateTimeField(format="%Y-%m-%d")
 
     class Meta:
         model = Task
@@ -13,5 +14,6 @@ class TaskSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "status",
-            "created_at"
+            "created_at",
+            "due_date"
             ]
