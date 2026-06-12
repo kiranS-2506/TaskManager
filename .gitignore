@@ -1,0 +1,23 @@
+# Block Virtual Environments
+TaskEnv/
+venv/
+
+# Block all Environment Secret files anywhere in the project
+.env
+*.env
+TaskmanagerProject/.env
+
+# Block all Python cache files anywhere
+__pycache__/
+*.pyc
+*/__pycache__/
+TaskmanagerProject/__pycache__/
+
+# Block Databases anywhere
+*.sqlite3
+db.sqlite3
+TaskmanagerProject/db.sqlite3
+
+# Block IDE configuration folders
+.vscode/
+.idea/
